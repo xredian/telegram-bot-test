@@ -1,0 +1,8 @@
+version: '3'
+services:
+  bot:
+    image: "app-tg-bot"
+  client:
+    image: "app-tg-client"
+  redis:
+    image: "redis:alpine"
