@@ -1,0 +1,7 @@
+json
+logging
+pickle
+python-dotenv
+redis
+telegram
+telethon
