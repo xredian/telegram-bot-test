@@ -5,7 +5,9 @@ This allows you to know about the intersection of common channels.
 
 # Getting Started
 
-git clone https://github.com/xredian/vk_post_statistic.git
+```
+git clone git@github.com:xredian/telegram-bot-test.git
+```
 
 # Creating .env
 
