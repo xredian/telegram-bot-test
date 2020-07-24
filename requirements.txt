@@ -1,7 +1,5 @@
-json
-logging
-pickle
+jsonschema
 python-dotenv
 redis
-telegram
+python-telegram-bot
 telethon
