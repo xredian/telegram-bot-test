@@ -35,6 +35,7 @@ async def dump_all_participants(channel):
 def compare(dumps):
     global result
     result = defaultdict(list)
+    print(dumps)
     for dump in dumps:
         for person in dumps[dump]:
             if person in dumps[dump]:
@@ -52,22 +53,27 @@ async def main():
     while True:
         print('updating...')
         global urls
-        dumps = dict.fromkeys(urls[2:-2].split("', '"))
-        new_urls = r.get('urls').decode("utf-8")
-        if new_urls != urls and new_urls != '' and urls != '':
-            urls = urls[2:-2].split("', '")
-            try:
-                for url in urls:
-                    channel = await bot.get_entity(url)
-                    dump = await dump_all_participants(channel)
-                    dumps[url] = dump
-                res = compare(dumps)
-            except ValueError:
-                sorry = "Sorry, I don't understand, please, make sure you type chat names correctly"
-                r.set('trouble', sorry)
-        else:
+        dumps = {}
+        try:
+            new_urls = r.get('urls').decode("utf-8")
+            if new_urls != urls and new_urls != '' and urls != '':
+                urls = new_urls[2:-2].split("', '")
+                try:
+                    for url in urls:
+                        channel = await bot.get_entity(url)
+                        dump = await dump_all_participants(channel)
+                        dumps[url] = dump
+                    res = compare(dumps)
+                except ValueError:
+                    sorry = "Sorry, I don't understand, please, make sure you type chat names correctly"
+                    r.set('trouble', sorry)
+            else:
+                time.sleep(2)
+            urls = new_urls
+        except AttributeError:
+            print('updating...')
             time.sleep(2)
-        urls = new_urls
+        time.sleep(5)
 
 
 with bot:

@@ -4,7 +4,7 @@ import json
 import os
 import pickle
 import redis
-from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, Handler)
+from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters)
 from telegram import (ReplyKeyboardMarkup)
 import telegram
 import time
@@ -30,13 +30,15 @@ api_hash = os.getenv("API_HASH")
 # We have to manually call "start" if we want an explicit bot token
 
 
-def start(bot_token, update):
+def start(update, context):
     reply_keyboard = [['/start', '/help']]
     update.message.reply_text(
-        "Hi, i can show users with the same channels :)", reply_markup=ReplyKeyboardMarkup(reply_keyboard))
+        "Hi, i can show users with the same channels - type their names separated by commas :)",
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard))
+    logger.info(update)
 
 
-def help(bot_token, update):
+def help(update, context):
     update.message.reply_text(
         "Hey, you can choose some channels, so I'll show you all users who follows at least two of them. Enjoy :)")
 
@@ -45,23 +47,25 @@ r = redis.StrictRedis(host='redis', port=6379, db=0)
 reply_n = ''
 
 
-def choose(bot_token, update):
+def choose(update, context):
     text = str(update.message.text)
     update.message.reply_text("Data collection in progress, please wait...")
-    urls = text.split(', ')
+    urls = text.split(',')
     r.set('urls', str(urls))
     global chat_id
     chat_id = update.message.chat_id
 
 
-def result(bot_token, reply):
+def result(reply):
     msg = ''
     for key in reply:
         print('json writing started...')
-        msg = msg + key + ' - ' + str((str(reply[key])[2:-2]).split("', '")) + '\n'
+        msg = ''.join((msg, key, ' - ', str((str(reply[key])[2:-2]).split("', '")), '\n'))
     with open(''.join(str(r.get('urls').decode('utf-8'))) + '.json', 'w', encoding='utf8') as outfile:
         json.dump(msg, outfile, ensure_ascii=False)
     file = open(''.join(str(r.get('urls').decode('utf-8'))) + '.json', 'rb')
+    r.delete('urls')
+    r.delete('result')
     bot.send_document(chat_id=chat_id, document=file)
     file.close()
 
@@ -71,7 +75,7 @@ def error(bot_token, update, error):
 
 
 def main():
-    updater = Updater(bot_token)
+    updater = Updater(bot_token, use_context=True)
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler('start', start))
@@ -94,7 +98,8 @@ def check_for_updates():
             new_reply = pickle.loads(new_reply)
             if new_reply != reply_n and new_reply != '':
                 r.delete('result')
-                return result(bot_token, new_reply)
+                time.sleep(2)
+                return result(new_reply)
             else:
                 time.sleep(1)
             reply_n = new_reply
@@ -102,17 +107,19 @@ def check_for_updates():
         except TypeError:
             print('waiting for update...')
             time.sleep(5)
-        trouble = r.get('trouble').decode('utf-8')
-        if trouble == "Sorry, I don't understand, please, make sure you type chat names correctly":
-            bot.send_message(chat_id=chat_id, text=trouble)
-        r.delete('trouble')
-        time.sleep(3)
+        try:
+            trouble = r.get('trouble').decode('utf-8')
+            if trouble == "Sorry, I don't understand, please, make sure you type chat names correctly":
+                bot.send_message(chat_id=chat_id, text=trouble)
+            r.delete('trouble')
+            time.sleep(3)
+        except AttributeError:
+            print('waiting for update...')
+            time.sleep(5)
 
 
 rt = timer.RepeatedTimer(5, check_for_updates)  # it auto-starts, no need of rt.start()
-try:
-    # your long-running job goes here...
-    if __name__ == '__main__':
-        main()
-finally:
-    rt.stop()
+#rt.stop()
+
+if __name__ == '__main__':
+    main()
