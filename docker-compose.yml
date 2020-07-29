@@ -5,4 +5,4 @@ services:
   client:
     image: "app-tg-client"
   redis:
-    image: "redis:alpine"
+    image: "redis:6.0.6-alpine3.12"
