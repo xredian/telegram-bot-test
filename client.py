@@ -18,7 +18,7 @@ username = os.getenv("USERNAME")
 
 
 bot = TelegramClient(username, api_id, api_hash).start(bot_token=bot_token)
-r = redis.Redis(host='localhost', port=6379, db=0)
+r = redis.Redis(host='redis', port=6379, db=0)
 urls = ''
 
 

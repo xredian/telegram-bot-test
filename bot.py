@@ -41,13 +41,7 @@ def help(bot_token, update):
         "Hey, you can choose some channels, so I'll show you all users who follows at least two of them. Enjoy :)")
 
 
-def echo(bot_token, update):
-    update.message.reply_text("I don't understand you. Please press button /start, /help or wait for answer "
-                              "if you've already choose the channels")
-    logger.info(update)
-
-
-r = redis.Redis(host='localhost', port=6379, db=0)
+r = redis.StrictRedis(host='redis', port=6379, db=0)
 reply_n = ''
 
 
@@ -83,7 +77,6 @@ def main():
     dp.add_handler(CommandHandler('start', start))
     dp.add_handler(CommandHandler('help', help))
     dp.add_handler(MessageHandler(Filters.text, choose))
-    dp.add_handler(MessageHandler(not Filters.text, echo))
 
     # log all errors
     dp.add_error_handler(error)

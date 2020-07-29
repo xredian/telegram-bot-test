@@ -14,6 +14,7 @@ WORKDIR /usr/src/app-tg-bot
 # устанавливаем зависимости python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get install -y redis-server
 
 COPY * /src/
 RUN ls -la /src/*
