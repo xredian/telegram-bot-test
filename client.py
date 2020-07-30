@@ -35,7 +35,6 @@ async def dump_all_participants(channel):
 def compare(dumps):
     global result
     result = defaultdict(list)
-    print(dumps)
     for dump in dumps:
         for person in dumps[dump]:
             if person in dumps[dump]:

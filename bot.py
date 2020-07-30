@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 import logging
-import json
 import os
 import pickle
 import redis
@@ -9,6 +8,7 @@ from telegram import (ReplyKeyboardMarkup)
 import telegram
 import time
 import timer
+import re
 
 
 load_dotenv()
@@ -59,11 +59,11 @@ def choose(update, context):
 def result(reply):
     msg = ''
     for key in reply:
-        print('json writing started...')
-        msg = ''.join((msg, key, ' - ', str((str(reply[key])[2:-2]).split("', '")), '\n'))
-    with open(''.join(str(r.get('urls').decode('utf-8'))) + '.json', 'w', encoding='utf8') as outfile:
-        json.dump(msg, outfile, ensure_ascii=False)
-    file = open(''.join(str(r.get('urls').decode('utf-8'))) + '.json', 'rb')
+        print('txt writing started...')
+        msg = ''.join((msg, key, ' - ', re.sub(r"[[\]']", "", str(reply[key])), '\n'))
+    with open(''.join(re.sub(r"[[\]']", "", str(r.get('urls').decode('utf-8')))) + '.txt', 'w', encoding='utf8') as outfile:
+        outfile.writelines(msg)
+    file = open(''.join(re.sub(r"[[\]']", "", str(r.get('urls').decode('utf-8')))) + '.txt', 'rb')
     r.delete('urls')
     r.delete('result')
     bot.send_document(chat_id=chat_id, document=file)
